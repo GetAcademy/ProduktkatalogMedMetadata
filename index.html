@@ -8,6 +8,12 @@
     <style>
         body {
             margin: 0;
+            height: 100vh;
+        }
+
+        .innhold {
+            padding: 6px;
+            display: grid;
         }
 
         table,
@@ -17,6 +23,10 @@
             border: 1px solid gray;
             border-collapse: collapse;
         }
+
+        td, th {
+            padding: 4px;
+        }
     </style>
 </head>
 
@@ -24,147 +34,168 @@
     <div id="side">
     </div>
     <script>
-        let app = new ProduktkatalogApp();
-        app.visSide('forside');
-
         let komponenter = {
             overskrift: function (data, metadata, parameterVerdi) {
                 return `<h3>${data.overskrift}</h3>` + (data.tekst ? `<p>${data.tekst}</p>` : '');
             },
-            skjemaVisning: function (data, metadata, parameterVerdi) {
-                return 'Skjemavisning';
+            skjemaVisning: function (data, metadata, index) {
+                return `<div><table style="text-align: left">
+                          ${ metadata.map(f => 
+                              `<tr>
+                                <th>${ f.visningsnavn }</th>
+                                <td>${ data[f.navn] }</td>
+                              </tr>` ).join('') }
+                        </table></div>`;
             }
         };
 
         class ProduktkatalogApp {
-    constructor() {
-        this.data = {
-            kategorier: ["kniv", "skje", "gaffel"],
-            produkter: [
-                { navn: "Gullskje 22cm", pris: 990, kategori: "skje" },
-                { navn: "Sølvskje 22cm", pris: 190, kategori: "skje" },
-                { navn: "Stålskje 22cm", pris: 19, kategori: "skje" },
-                { navn: "Gullkniv 22cm", pris: 990, kategori: "kniv" },
-                { navn: "Sølvkniv 22cm", pris: 190, kategori: "kniv" },
-                { navn: "Stålkniv 22cm", pris: 19, kategori: "kniv" },
-                { navn: "Gullgaffel 22cm", pris: 990, kategori: "gaffel" },
-                { navn: "Sølvgaffel 22cm", pris: 190, kategori: "gaffel" },
-                { navn: "Stålgaffel 22cm", pris: 19, kategori: "gaffel" }
-            ],
-            tekster: {
-                forside: {
-                    overskrift: "Bestikkshoppen",
-                    tekst: "Velkommen til Bestikkshoppen AS. Vi håper du får mange flotte handleopplevelser!",
-                },
-                info: {
-                    telefon: '987 65 432',
-                    slagord: 'Vi bestikker deg!'
-                },
-                kategorier: {
-                    overskrift: "Kategorier",
-                    tekst: "Denne siden viser alle våre produktkategorier. Velg en av dem for å se våre produkter. "
-                },
-                produkt: {
-                    overskrift: "{{ obj.navn }}",
-                    tekst: "Se detaljer om dette produktet under:"
-                },
-                kontaktOss: {
-                    navn: "Bestikkshoppen AS",
-                    adresse: "Melkeveien 1",
-                    postnr: "0123",
-                    poststed: "Oslo",
-                    epost: "post@bestikkshoppen.no",
-                    web: "www.bestikkshoppen.no"
-                }
-            }
-        };
-        this.metadata = {
-            felt: {
-                produkt: [
-                    { navn: 'navn' },
-                    { navn: 'pris', type: 'kroner' },
-                    { navn: 'kategori' },
-                ],
-                kontaktOss: [
-                    { navn: 'navn' },
-                    { navn: 'adresse' },
-                    { navn: 'postnr' },
-                    { navn: 'poststed' },
-                    { navn: 'epost' },
-                    { navn: 'web' },
-                ]
-            },
-            sider: {
-                "forside": {
-                    mal: "infoSide",
-                    data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.info" }
-                },
-                "kategori-liste": {
-                    mal: "listeSide",
-                    data: { "overskrift": "tekster.kategorier", "liste-visning": "kategorier" }
-                },
-                "produkt-liste": {
-                    mal: "listeSide",
-                    data: { "overskrift": "tekster.produkt", "liste-visning": "kategorier" },
-                    metadata: { "liste-visning": "produktFelt" }
-                },
-                "enkelt-produkt": {
-                    mal: "infoSide",
-                    data: { "overskrift": "tekster.produkt", "skjemaVisning": "produkter[i]" },
-                    metadata: { "liste-visning": "produktFelt" }
-                },
-                "kontakt-oss": {
-                    mal: "infoSide",
-                    data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.kontaktOss" },
-                    metadata: { "skjemaVisning": "produktFelt" }
-                }
-            },
-            maler: {
-                infoSide: {
-                    komponenter: ["overskrift", "skjemaVisning"],
-                    layout: {
-                        rader: "200px auto",
-                        kolonner: "auto",
-                        mal: ["overskrift", "skjemaVisning"]
+            constructor() {
+                this.data = {
+                    kategorier: ["kniv", "skje", "gaffel"],
+                    produkter: [
+                        { navn: "Gullskje 22cm", pris: 990, kategori: "skje" },
+                        { navn: "Sølvskje 22cm", pris: 190, kategori: "skje" },
+                        { navn: "Stålskje 22cm", pris: 19, kategori: "skje" },
+                        { navn: "Gullkniv 22cm", pris: 990, kategori: "kniv" },
+                        { navn: "Sølvkniv 22cm", pris: 190, kategori: "kniv" },
+                        { navn: "Stålkniv 22cm", pris: 19, kategori: "kniv" },
+                        { navn: "Gullgaffel 22cm", pris: 990, kategori: "gaffel" },
+                        { navn: "Sølvgaffel 22cm", pris: 190, kategori: "gaffel" },
+                        { navn: "Stålgaffel 22cm", pris: 19, kategori: "gaffel" }
+                    ],
+                    tekster: {
+                        forside: {
+                            overskrift: "Bestikkshoppen",
+                            tekst: "Velkommen til Bestikkshoppen AS. Vi håper du får mange flotte handleopplevelser!",
+                        },
+                        info: {
+                            telefon: '987 65 432',
+                            slagord: 'Vi bestikker deg!'
+                        },
+                        kategorier: {
+                            overskrift: "Kategorier",
+                            tekst: "Denne siden viser alle våre produktkategorier. Velg en av dem for å se våre produkter. "
+                        },
+                        produkt: {
+                            overskrift: "{{ obj.navn }}",
+                            tekst: "Se detaljer om dette produktet under:"
+                        },
+                        kontaktOss: {
+                            navn: "Bestikkshoppen AS",
+                            adresse: "Melkeveien 1",
+                            postnr: "0123",
+                            poststed: "Oslo",
+                            epost: "post@bestikkshoppen.no",
+                            web: "www.bestikkshoppen.no"
+                        }
                     }
-                },
-                listeSide: {
-                    komponenter: ["overskrift", "liste-visning"],
-                    layout: {
-                        rader: "200px auto",
-                        kolonner: "auto",
-                        mal: ["overskrift", "skjemaVisning"]
+                };
+                this.metadata = {
+                    felt: {
+                        produkt: [
+                            { navn: 'navn', visningsnavn: 'Navn' },
+                            { navn: 'pris', visningsnavn: 'Pris', type: 'kroner' },
+                            { navn: 'kategori', visningsnavn: 'Kategori' },
+                        ],
+                        forside: [
+                            { navn: 'telefon', visningsnavn: 'Telefon' },
+                            { navn: 'slagord', visningsnavn: 'Slagord' },
+                        ],
+                        kontaktOss: [
+                            { navn: 'navn' },
+                            { navn: 'adresse' },
+                            { navn: 'postnr' },
+                            { navn: 'poststed' },
+                            { navn: 'epost' },
+                            { navn: 'web' },
+                        ]
+                    },
+                    sider: {
+                        "forside": {
+                            mal: "infoSide",
+                            data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.info" },
+                            metadata: { "skjemaVisning": "felt.forside" },
+                        },
+                        "kategori-liste": {
+                            mal: "listeSide",
+                            data: { "overskrift": "tekster.kategorier", "liste-visning": "kategorier" }
+                        },
+                        "produkt-liste": {
+                            mal: "listeSide",
+                            data: { "overskrift": "tekster.produkt", "liste-visning": "kategorier" },
+                            metadata: { "liste-visning": "produktFelt" }
+                        },
+                        "enkelt-produkt": {
+                            mal: "infoSide",
+                            data: { "overskrift": "tekster.produkt", "skjemaVisning": "produkter[i]" },
+                            metadata: { "liste-visning": "produktFelt" }
+                        },
+                        "kontakt-oss": {
+                            mal: "infoSide",
+                            data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.kontaktOss" },
+                            metadata: { "skjemaVisning": "produktFelt" }
+                        }
+                    },
+                    maler: {
+                        infoSide: {
+                            komponenter: ["overskrift", "skjemaVisning"],
+                            layout: {
+                                rader: "200px auto",
+                                kolonner: "auto",
+                                mal: ["overskrift", "skjemaVisning"]
+                            }
+                        },
+                        listeSide: {
+                            komponenter: ["overskrift", "liste-visning"],
+                            layout: {
+                                rader: "200px auto",
+                                kolonner: "auto",
+                                mal: ["overskrift", "skjemaVisning"]
+                            }
+                        }
                     }
-                }
+                };
             }
-        };
-    }
 
-    visSide(sidenavn, parameter) {
-        let metadataSide = this.metadata.sider[sidenavn];
-        let metadataMal = this.metadata.maler[metadataSide.mal];
-        let style = `
-            display: grid;
-            height: 100vh;
-            grid-template-rows: ${metadataMal.layout.rader};
-            grid-template-columns: ${metadataMal.layout.kolonner};
-            grid-areas: '${metadataMal.layout.mal.join(`' '`)}';
-            `;
-        let self = this;
-        let renderKomponent = function (komponentNavn) {
-            let komponentFunksjon = komponenter[komponentNavn];
-            let dataSti = metadataSide.data[komponentNavn];
-            let felt = dataSti.split('.');
-            let data = self.data;
-            for (let feltNavn of felt) {
-                data = data[feltNavn];
+            visSide(sidenavn, parameter) {
+                let metadataSide = this.metadata.sider[sidenavn];
+                let metadataMal = this.metadata.maler[metadataSide.mal];
+                let style = `
+                    grid-template-rows: ${metadataMal.layout.rader};
+                    grid-template-columns: ${metadataMal.layout.kolonner};
+                    grid-areas: '${metadataMal.layout.mal.join(`' '`)}';
+                    `;
+                let innhold = metadataMal.komponenter.map(k => this.renderKomponent(k, metadataSide)).join('');
+                document.getElementById('side').outerHTML =
+                    `<div class="innhold" id="side" style="${style}">
+                        <!-- ${sidenavn} -->
+                        ${innhold}
+                     </div>`;
             }
-            return komponentFunksjon(data);
-        };
-        let innhold = metadataMal.komponenter.map(renderKomponent).join('');
-        document.getElementById('side').outerHTML = `<div id="side" style="${style}">${innhold}</div>`;
-    }
-}
+
+            renderKomponent(komponentNavn, metadataSide) {
+                let komponentFunksjon = komponenter[komponentNavn];
+                let dataSti = (metadataSide.data || {})[komponentNavn] || '';
+                let metadataSti = (metadataSide.metadata || {})[komponentNavn] || '';
+                console.log(metadataSti);
+                return `<!-- start ${komponentNavn} --> 
+                            ${komponentFunksjon(
+                                this.hentVerdi(dataSti, this.data),
+                                this.hentVerdi(metadataSti, this.metadata))}
+                        <!-- slutt ${komponentNavn} --> `;
+            }
+
+            hentVerdi(sti, objekt) {
+                for (let feltNavn of sti.split('.')) {
+                    objekt = objekt[feltNavn];
+                }
+                return objekt;
+            }
+        }
+
+        let app = new ProduktkatalogApp();
+        app.visSide('forside');
     </script>
 </body>
 
