@@ -17,10 +17,10 @@ class ProduktkatalogApp {
                 forside: {
                     overskrift: "Bestikkshoppen",
                     tekst: "Velkommen til Bestikkshoppen AS. Vi håper du får mange flotte handleopplevelser!",
-                    info: {
-                        telefon: '987 65 432',
-                        slagord: 'Vi bestikker deg!'
-                    }
+                },
+                info: {
+                    telefon: '987 65 432',
+                    slagord: 'Vi bestikker deg!'
                 },
                 kategorier: {
                     overskrift: "Kategorier",
@@ -59,7 +59,7 @@ class ProduktkatalogApp {
             sider: {
                 "forside": {
                     mal: "infoSide",
-                    data: { "overskrift": "tekster.forside", "skjema-visning": "tekster.info" }
+                    data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.info" }
                 },
                 "kategori-liste": {
                     mal: "listeSide",
@@ -72,22 +72,22 @@ class ProduktkatalogApp {
                 },
                 "enkelt-produkt": {
                     mal: "infoSide",
-                    data: { "overskrift": "tekster.produkt", "skjema-visning": "produkter[i]" },
+                    data: { "overskrift": "tekster.produkt", "skjemaVisning": "produkter[i]" },
                     metadata: { "liste-visning": "produktFelt" }
                 },
                 "kontakt-oss": {
                     mal: "infoSide",
-                    data: { "overskrift": "tekster.forside", "skjema-visning": "tekster.kontaktOss" },
-                    metadata: { "skjema-visning": "produktFelt" }
+                    data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.kontaktOss" },
+                    metadata: { "skjemaVisning": "produktFelt" }
                 }
             },
             maler: {
                 infoSide: {
-                    komponenter: ["overskrift", "skjema-visning"],
+                    komponenter: ["overskrift", "skjemaVisning"],
                     layout: {
                         rader: "200px auto",
                         kolonner: "auto",
-                        mal: ["overskrift", "skjema-visning"]
+                        mal: ["overskrift", "skjemaVisning"]
                     }
                 },
                 listeSide: {
@@ -95,11 +95,11 @@ class ProduktkatalogApp {
                     layout: {
                         rader: "200px auto",
                         kolonner: "auto",
-                        mal: ["overskrift", "skjema-visning"]
+                        mal: ["overskrift", "skjemaVisning"]
                     }
                 }
             }
-        }
+        };
     }
 
     visSide(sidenavn, parameter) {
@@ -110,8 +110,20 @@ class ProduktkatalogApp {
             height: 100vh;
             grid-template-rows: ${metadataMal.layout.rader}; 
             grid-template-columns: ${metadataMal.layout.kolonner}; 
-            grid-areas: '${metadataMal.layout.mal.join(`','`)}';
+            grid-areas: '${metadataMal.layout.mal.join(`' '`)}';
             `;
-        document.getElementById('side').outerHTML = `<div id="side" style="${style}">${''}</div>`;
+        let self = this;
+        let renderKomponent = function (komponentNavn) {
+            let komponentFunksjon = komponenter[komponentNavn];
+            let dataSti = metadataSide.data[komponentNavn];
+            let felt = dataSti.split('.');
+            let data = self.data;
+            for (let feltNavn of felt) {
+                data = data[feltNavn];
+            }
+            return komponentFunksjon(data);
+        };
+        let innhold = metadataMal.komponenter.map(renderKomponent).join('');
+        document.getElementById('side').outerHTML = `<div id="side" style="${style}">${innhold}</div>`;
     }
 }
