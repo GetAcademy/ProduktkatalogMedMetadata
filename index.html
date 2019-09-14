@@ -1,42 +1,33 @@
 ﻿<!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
     <meta charset="utf-8" />
     <title></title>
     <style>
-        table, tr, td, th {
+        body{
+            margin: 0;
+        }
+        table,
+        tr,
+        td,
+        th {
             border: 1px solid gray;
             border-collapse: collapse;
         }
     </style>
-    <script src="js/utils.js"></script>
-    <script src="js/metadata.js"></script>
-    <script src="js/dummyData.js"></script>
-    <script src="js/superTable.js"></script>
-    <script src="js/superForm.js"></script>
+    <script src="komponenter.js"></script>
+    <script src="produktkatalogApp.js"></script>
 </head>
+
 <body>
-    <div>Meny: <a href="javascript:goToPage('start')">Start</a></div>
-    <div id="content"></div>
+    <div id="side">
+    </div>
     <script>
-        var classFromTemplate = {
-            table: SuperTable,
-            form: SuperForm
-        }
-        goToPage('start');
-        //goToPage('editAndDetailsPersonPage', { id: 1, edit: true });
-        function goToPage(pageName, params) {
-            const components = metadata.pages[pageName].components;
-            let html = '';
-            for (let componentName of components) {
-                const myMetadata = metadata.components[componentName];
-                const template = classFromTemplate[myMetadata.template];                
-                const htmlGenerator = new template(myMetadata, dummyData[myMetadata.dataPath], params);
-                html += `<div>${htmlGenerator.getHtml()}</div>`;
-            }
-            document.getElementById('content').innerHTML = html;
-        }
+        let app = new ProduktkatalogApp();
+        app.visSide('forside');
     </script>
 </body>
+
 </html>
