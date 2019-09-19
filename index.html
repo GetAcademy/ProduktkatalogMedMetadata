@@ -7,7 +7,7 @@
     <title></title>
     <style>
         body {
-            margin: 0;       
+            margin: 0;
         }
 
         .innhold {
@@ -15,7 +15,7 @@
             height: 100vh;
         }
 
-        .sideElement{
+        .sideElement {
             padding: 6px;
         }
 
@@ -27,11 +27,12 @@
             border-collapse: collapse;
         }
 
-        td, th {
+        td,
+        th {
             padding: 4px;
         }
 
-        .meny{
+        .meny {
             background-color: darkcyan;
         }
     </style>
@@ -48,17 +49,17 @@
             },
             skjemaVisning: function (data, metadata, index) {
                 return `<div class="sideElement" style="grid-area: skjemaVisning"><table style="text-align: left">
-                          ${ metadata.map(f => 
-                              `<tr>
-                                <th>${ f.visningsnavn }</th>
-                                <td>${ data[f.navn] }</td>
-                              </tr>` ).join('') }
+                          ${ metadata.map(f =>
+                    `<tr>
+                                <th>${ f.visningsnavn}</th>
+                                <td>${ data[f.navn]}</td>
+                              </tr>` ).join('')}
                         </table></div>`;
             },
             meny: function (data, metadata, index) {
                 return `<div class="sideElement" style="grid-area: meny" class="meny"><h3>Meny</h3><ul>
-                          ${ Object.keys(metadata).filter(navn=>metadata[navn].visningsnavn).map(navn => 
-                              `<li><a href="javascript:app.visSide('${ navn }')">${ metadata[navn].visningsnavn }</a></li>` ).join('') }
+                          ${ Object.keys(metadata).filter(navn => metadata[navn].visningsnavn).map(navn =>
+                    `<li><a href="javascript:app.visSide('${navn}')">${metadata[navn].visningsnavn}</a></li>`).join('')}
                         </ul></div>`;
             },
         };
@@ -96,12 +97,16 @@
                             tekst: "Se detaljer om dette produktet under:"
                         },
                         kontaktOss: {
-                            navn: "Bestikkshoppen AS",
-                            adresse: "Melkeveien 1",
-                            postnr: "0123",
-                            poststed: "Oslo",
-                            epost: "post@bestikkshoppen.no",
-                            web: "www.bestikkshoppen.no"
+                            overskrift: "Bestikkshoppen",
+                            tekst: "Vi gleder oss til å høre fra deg!",
+                            felt: {
+                                navn: "Bestikkshoppen AS",
+                                adresse: "Melkeveien 1",
+                                postnr: "0123",
+                                poststed: "Oslo",
+                                epost: "post@bestikkshoppen.no",
+                                web: "www.bestikkshoppen.no"
+                            }
                         }
                     }
                 };
@@ -117,12 +122,12 @@
                             { navn: 'slagord', visningsnavn: 'Slagord' },
                         ],
                         kontaktOss: [
-                            { navn: 'navn' },
-                            { navn: 'adresse' },
-                            { navn: 'postnr' },
-                            { navn: 'poststed' },
-                            { navn: 'epost' },
-                            { navn: 'web' },
+                            { navn: 'navn', visningsnavn: 'Navn' },
+                            { navn: 'adresse', visningsnavn: 'Adresse' },
+                            { navn: 'postnr', visningsnavn: 'Postnr.' },
+                            { navn: 'poststed', visningsnavn: 'Poststed' },
+                            { navn: 'epost', visningsnavn: 'E-post' },
+                            { navn: 'web', visningsnavn: 'Web' },
                         ]
                     },
                     sider: {
@@ -135,23 +140,23 @@
                         "kategori-liste": {
                             visningsnavn: 'Kategorier',
                             mal: "listeSide",
-                            data: { "overskrift": "tekster.kategorier", "liste-visning": "kategorier" }
+                            data: { "overskrift": "tekster.kategorier", "liste-visning": "kategorier", "meny": "sider" }
                         },
                         "produkt-liste": {
                             mal: "listeSide",
                             data: { "overskrift": "tekster.produkt", "liste-visning": "kategorier" },
-                            metadata: { "liste-visning": "produktFelt" }
+                            metadata: { "liste-visning": "produktFelt", "meny": "sider" }
                         },
                         "enkelt-produkt": {
                             mal: "infoSide",
                             data: { "overskrift": "tekster.produkt", "skjemaVisning": "produkter[i]" },
-                            metadata: { "liste-visning": "produktFelt" }
+                            metadata: { "liste-visning": "produktFelt", "meny": "sider" }
                         },
                         "kontakt-oss": {
-                            visningsnavn: 'Kontakt oss',                        
+                            visningsnavn: 'Kontakt oss',
                             mal: "infoSide",
-                            data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.kontaktOss" },
-                            metadata: { "skjemaVisning": "produktFelt" }
+                            data: { "overskrift": "tekster.kontaktOss", "skjemaVisning": "tekster.kontaktOss.felt" },
+                            metadata: { "skjemaVisning": "felt.kontaktOss", "meny": "sider" }
                         }
                     },
                     maler: {
@@ -197,8 +202,8 @@
                 let metadataSti = (metadataSide.metadata || {})[komponentNavn] || '';
                 return `<!-- start ${komponentNavn} --> 
                             ${komponentFunksjon(
-                                this.hentVerdi(dataSti, this.data),
-                                this.hentVerdi(metadataSti, this.metadata))}
+                    this.hentVerdi(dataSti, this.data),
+                    this.hentVerdi(metadataSti, this.metadata))}
                         <!-- slutt ${komponentNavn} --> `;
             }
 
