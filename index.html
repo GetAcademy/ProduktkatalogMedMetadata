@@ -7,13 +7,16 @@
     <title></title>
     <style>
         body {
-            margin: 0;
-            height: 100vh;
+            margin: 0;       
         }
 
         .innhold {
-            padding: 6px;
             display: grid;
+            height: 100vh;
+        }
+
+        .sideElement{
+            padding: 6px;
         }
 
         table,
@@ -27,6 +30,10 @@
         td, th {
             padding: 4px;
         }
+
+        .meny{
+            background-color: darkcyan;
+        }
     </style>
 </head>
 
@@ -36,17 +43,24 @@
     <script>
         let komponenter = {
             overskrift: function (data, metadata, parameterVerdi) {
-                return `<h3>${data.overskrift}</h3>` + (data.tekst ? `<p>${data.tekst}</p>` : '');
+                let p = data.tekst ? `<p>${data.tekst}</p>` : '';
+                return `<div class="sideElement" style="grid-area: overskrift"><h3>${data.overskrift}</h3>${p}</div>`;
             },
             skjemaVisning: function (data, metadata, index) {
-                return `<div><table style="text-align: left">
+                return `<div class="sideElement" style="grid-area: skjemaVisning"><table style="text-align: left">
                           ${ metadata.map(f => 
                               `<tr>
                                 <th>${ f.visningsnavn }</th>
                                 <td>${ data[f.navn] }</td>
                               </tr>` ).join('') }
                         </table></div>`;
-            }
+            },
+            meny: function (data, metadata, index) {
+                return `<div class="sideElement" style="grid-area: meny" class="meny"><h3>Meny</h3><ul>
+                          ${ Object.keys(metadata).filter(navn=>metadata[navn].visningsnavn).map(navn => 
+                              `<li><a href="javascript:app.visSide('${ navn }')">${ metadata[navn].visningsnavn }</a></li>` ).join('') }
+                        </ul></div>`;
+            },
         };
 
         class ProduktkatalogApp {
@@ -113,11 +127,13 @@
                     },
                     sider: {
                         "forside": {
+                            visningsnavn: 'Hjem',
                             mal: "infoSide",
                             data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.info" },
-                            metadata: { "skjemaVisning": "felt.forside" },
+                            metadata: { "skjemaVisning": "felt.forside", "meny": "sider" },
                         },
                         "kategori-liste": {
+                            visningsnavn: 'Kategorier',
                             mal: "listeSide",
                             data: { "overskrift": "tekster.kategorier", "liste-visning": "kategorier" }
                         },
@@ -132,6 +148,7 @@
                             metadata: { "liste-visning": "produktFelt" }
                         },
                         "kontakt-oss": {
+                            visningsnavn: 'Kontakt oss',                        
                             mal: "infoSide",
                             data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.kontaktOss" },
                             metadata: { "skjemaVisning": "produktFelt" }
@@ -139,19 +156,19 @@
                     },
                     maler: {
                         infoSide: {
-                            komponenter: ["overskrift", "skjemaVisning"],
+                            komponenter: ["meny", "overskrift", "skjemaVisning"],
                             layout: {
                                 rader: "200px auto",
-                                kolonner: "auto",
-                                mal: ["overskrift", "skjemaVisning"]
+                                kolonner: "200px auto",
+                                mal: ["meny overskrift", "meny skjemaVisning"]
                             }
                         },
                         listeSide: {
-                            komponenter: ["overskrift", "liste-visning"],
+                            komponenter: ["meny", "overskrift", "liste-visning"],
                             layout: {
                                 rader: "200px auto",
-                                kolonner: "auto",
-                                mal: ["overskrift", "skjemaVisning"]
+                                kolonner: "200px auto",
+                                mal: ["meny overskrift", "meny skjemaVisning"]
                             }
                         }
                     }
@@ -164,7 +181,7 @@
                 let style = `
                     grid-template-rows: ${metadataMal.layout.rader};
                     grid-template-columns: ${metadataMal.layout.kolonner};
-                    grid-areas: '${metadataMal.layout.mal.join(`' '`)}';
+                    grid-template-areas: '${metadataMal.layout.mal.join(`' '`)}';
                     `;
                 let innhold = metadataMal.komponenter.map(k => this.renderKomponent(k, metadataSide)).join('');
                 document.getElementById('side').outerHTML =
@@ -178,7 +195,6 @@
                 let komponentFunksjon = komponenter[komponentNavn];
                 let dataSti = (metadataSide.data || {})[komponentNavn] || '';
                 let metadataSti = (metadataSide.metadata || {})[komponentNavn] || '';
-                console.log(metadataSti);
                 return `<!-- start ${komponentNavn} --> 
                             ${komponentFunksjon(
                                 this.hentVerdi(dataSti, this.data),
