@@ -56,6 +56,15 @@
                               </tr>` ).join('')}
                         </table></div>`;
             },
+            listeVisning: function (data, metadata, index) {
+                return `<div class="sideElement" style="grid-area: listeVisning"><table>
+                          ${ metadata.map(f =>
+                    `<tr>
+                                <th>${ f.visningsnavn}</th>
+                                <td>${ data[f.navn]}</td>
+                              </tr>` ).join('')}
+                        </table></div>`;
+            },
             meny: function (data, metadata, index) {
                 return `<div class="sideElement" style="grid-area: meny" class="meny"><h3>Meny</h3><ul>
                           ${ Object.keys(metadata).filter(navn => metadata[navn].visningsnavn).map(navn =>
@@ -140,7 +149,8 @@
                         "kategori-liste": {
                             visningsnavn: 'Kategorier',
                             mal: "listeSide",
-                            data: { "overskrift": "tekster.kategorier", "liste-visning": "kategorier", "meny": "sider" }
+                            data: { "overskrift": "tekster.kategorier", "liste-visning": "kategorier" },
+                            metadata: { "meny": "sider" },
                         },
                         "produkt-liste": {
                             mal: "listeSide",
@@ -169,7 +179,7 @@
                             }
                         },
                         listeSide: {
-                            komponenter: ["meny", "overskrift", "liste-visning"],
+                            komponenter: ["meny", "overskrift", "listeVisning"],
                             layout: {
                                 rader: "200px auto",
                                 kolonner: "200px auto",
@@ -198,6 +208,7 @@
 
             renderKomponent(komponentNavn, metadataSide) {
                 let komponentFunksjon = komponenter[komponentNavn];
+                if(!komponentFunksjon)console.log('mangler komponent: ' + komponentNavn);
                 let dataSti = (metadataSide.data || {})[komponentNavn] || '';
                 let metadataSti = (metadataSide.metadata || {})[komponentNavn] || '';
                 return `<!-- start ${komponentNavn} --> 
@@ -207,10 +218,11 @@
                         <!-- slutt ${komponentNavn} --> `;
             }
 
-            hentVerdi(sti, objekt) {
+            hentVerdi(sti, objekt) {                
                 for (let feltNavn of sti.split('.')) {
                     objekt = objekt[feltNavn];
                 }
+                console.log(sti, objekt);
                 return objekt;
             }
         }
