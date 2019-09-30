@@ -56,14 +56,19 @@
                               </tr>` ).join('')}
                         </table></div>`;
             },
-            listeVisning: function (data, metadata, index) {
-                return `<div class="sideElement" style="grid-area: listeVisning"><table>
-                          ${ metadata.map(f =>
-                    `<tr>
-                                <th>${ f.visningsnavn}</th>
-                                <td>${ data[f.navn]}</td>
-                              </tr>` ).join('')}
-                        </table></div>`;
+            listeVisning: function (data, felt, index) {
+                console.log('listeVisning', data, felt, index);
+                return `<div class="sideElement" style="grid-area: listeVisning">
+                            <table>
+                                <tr>
+                                    ${ felt.map(f => `<th>${ f.visningsnavn}</th>`).join('')}
+                                </tr>
+                                ${data.map(rad=>`
+                                    <tr>
+                                        ${ felt.map(f => `<td>${ rad[f.navn] }</td>`).join('')}
+                                    </tr>`).join('')}
+                            </table>
+                        </div>`;
             },
             meny: function (data, metadata, index) {
                 return `<div class="sideElement" style="grid-area: meny" class="meny"><h3>Meny</h3><ul>
@@ -76,7 +81,7 @@
         class ProduktkatalogApp {
             constructor() {
                 this.data = {
-                    kategorier: ["kniv", "skje", "gaffel"],
+                    kategorier: [{ kategori: "kniv" }, { kategori: "skje" }, { kategori: "gaffel" }],
                     produkter: [
                         { navn: "Gullskje 22cm", pris: 990, kategori: "skje" },
                         { navn: "Sølvskje 22cm", pris: 190, kategori: "skje" },
@@ -137,6 +142,9 @@
                             { navn: 'poststed', visningsnavn: 'Poststed' },
                             { navn: 'epost', visningsnavn: 'E-post' },
                             { navn: 'web', visningsnavn: 'Web' },
+                        ],
+                        kategorier: [
+                            { navn: 'kategori', visningsnavn: 'Kategori' },
                         ]
                     },
                     sider: {
@@ -146,23 +154,22 @@
                             data: { "overskrift": "tekster.forside", "skjemaVisning": "tekster.info" },
                             metadata: { "skjemaVisning": "felt.forside", "meny": "sider" },
                         },
-                        "kategori-liste": {
+                        "kategoriListe": {
                             visningsnavn: 'Kategorier',
                             mal: "listeSide",
-                            data: { "overskrift": "tekster.kategorier", "liste-visning": "kategorier" },
-                            metadata: { "meny": "sider" },
+                            data: { "overskrift": "tekster.kategorier", "listeVisning": "kategorier" },
+                            metadata: { "meny": "sider", "listeVisning": "felt.kategorier" },
                         },
-                        "produkt-liste": {
+                        "produktListe": {
                             mal: "listeSide",
-                            data: { "overskrift": "tekster.produkt", "liste-visning": "kategorier" },
-                            metadata: { "liste-visning": "produktFelt", "meny": "sider" }
+                            data: { "overskrift": "tekster.produkt", "listeVisning": "kategorier" },
+                            metadata: { "listeVisning": "produktFelt", "meny": "sider" }
                         },
-                        "enkelt-produkt": {
+                        "enkeltProdukt": {
                             mal: "infoSide",
-                            data: { "overskrift": "tekster.produkt", "skjemaVisning": "produkter[i]" },
-                            metadata: { "liste-visning": "produktFelt", "meny": "sider" }
+                            data: { "overskrift": "tekster.produkt", "skjemaVisning": "produkter[i]" },metadata: { "listeVisning": "produktFelt", "meny": "sider" }
                         },
-                        "kontakt-oss": {
+                        "kontaktOss": {
                             visningsnavn: 'Kontakt oss',
                             mal: "infoSide",
                             data: { "overskrift": "tekster.kontaktOss", "skjemaVisning": "tekster.kontaktOss.felt" },
@@ -183,7 +190,7 @@
                             layout: {
                                 rader: "200px auto",
                                 kolonner: "200px auto",
-                                mal: ["meny overskrift", "meny skjemaVisning"]
+                                mal: ["meny overskrift", "meny listeVisning"]
                             }
                         }
                     }
@@ -208,7 +215,7 @@
 
             renderKomponent(komponentNavn, metadataSide) {
                 let komponentFunksjon = komponenter[komponentNavn];
-                if(!komponentFunksjon)console.log('mangler komponent: ' + komponentNavn);
+                if (!komponentFunksjon) console.log('mangler komponent: ' + komponentNavn);
                 let dataSti = (metadataSide.data || {})[komponentNavn] || '';
                 let metadataSti = (metadataSide.metadata || {})[komponentNavn] || '';
                 return `<!-- start ${komponentNavn} --> 
@@ -218,7 +225,7 @@
                         <!-- slutt ${komponentNavn} --> `;
             }
 
-            hentVerdi(sti, objekt) {                
+            hentVerdi(sti, objekt) {
                 for (let feltNavn of sti.split('.')) {
                     objekt = objekt[feltNavn];
                 }
