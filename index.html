@@ -43,11 +43,14 @@
     </div>
     <script>
         let komponenter = {
-            overskrift: function (data, metadata, parameterVerdi) {
+            overskrift: function (data, metadata) {
                 let p = data.tekst ? `<p>${data.tekst}</p>` : '';
                 return `<div class="sideElement" style="grid-area: overskrift"><h3>${data.overskrift}</h3>${p}</div>`;
             },
             skjemaVisning: function (data, metadata, index) {
+                if (index != null) {
+                    data = data[index];
+                }
                 return `<div class="sideElement" style="grid-area: skjemaVisning"><table style="text-align: left">
                           ${ metadata.felt.map(f =>
                     `<tr>
@@ -56,29 +59,22 @@
                               </tr>` ).join('')}
                         </table></div>`;
             },
-            listeVisning: function (data, metadata, index) {
+            listeVisning: function (data, metadata) {
                 return `<div class="sideElement" style="grid-area: listeVisning">
                             <table>
                                 <tr>
                                     ${ metadata.felt.map(f => `<th>${f.visningsnavn}</th>`).join('')}
                                 </tr>
-                                ${data.map(rad => `
+                                ${data.map((rad, index) => `
                                     <tr>
                                         ${ metadata.felt.map(f => `<td>${rad[f.navn]}</td>`).join('')}
-                                        ${ (metadata.operasjoner || []).map((o, index) => `
-                                        <td>
-                                            <a href="javascript:app.${o.funksjon}(${o.parametre.map(p =>
-                                                    p.verdi ? JSON.stringify(p.verdi) : 
-                                                    p.index ? index : {}
-                                                ).join(',').replace(/"/g,"'")})">
-                                                ${o.tekst}
-                                            </a>
-                                        </td>`).join('')}
+                                        ${ (metadata.operasjoner || []).map((o) => `
+                                        <td><a href="javascript:app.visSide('${o.side}', ${index})">${o.tekst}</a></td>`).join('')}
                                     </tr>`).join('')}
                             </table>
                         </div>`;
             },
-            meny: function (data, metadata, index) {
+            meny: function (data, metadata) {
                 return `<div class="sideElement" style="grid-area: meny" class="meny"><h3>Meny</h3><ul>
                           ${ Object.keys(metadata).filter(navn => metadata[navn].visningsnavn).map(navn =>
                     `<li><a href="javascript:app.visSide('${navn}')">${metadata[navn].visningsnavn}</a></li>`).join('')}
@@ -89,7 +85,6 @@
         class ProduktkatalogApp {
             constructor() {
                 this.data = {
-                    kategorier: [{ kategori: "kniv" }, { kategori: "skje" }, { kategori: "gaffel" }],
                     produkter: [
                         { navn: "Gullskje 22cm", pris: 990, kategori: "skje" },
                         { navn: "Sølvskje 22cm", pris: 190, kategori: "skje" },
@@ -109,10 +104,6 @@
                         info: {
                             telefon: '987 65 432',
                             slagord: 'Vi bestikker deg!'
-                        },
-                        kategorier: {
-                            overskrift: "Kategorier",
-                            tekst: "Denne siden viser alle våre produktkategorier. Velg en av dem for å se våre produkter. "
                         },
                         produkt: {
                             overskrift: "Produkt",
@@ -143,7 +134,7 @@
                             { navn: 'pris', visningsnavn: 'Pris', type: 'kroner' },
                             { navn: 'kategori', visningsnavn: 'Kategori' },
                         ],
-                        operasjoner: [{ funksjon: 'visSide', tekst: 'detaljer', parametre: [{ verdi: 'enkeltprodukt' }, { index: true }] }]
+                        operasjoner: [{ side: 'enkeltProdukt', tekst: 'detaljer' }]
                     },
                     forside: {
                         felt: [
@@ -160,10 +151,6 @@
                             { navn: 'epost', visningsnavn: 'E-post' },
                             { navn: 'web', visningsnavn: 'Web' },
                         ]
-                    },
-                    kategorier: {
-                        felt: [{ navn: 'kategori', visningsnavn: 'Kategori' }],
-                        operasjoner: [{ funksjon: 'visSide', parametre: [{ verdi: 'produktListe' }] }]
                     },
                     sider: {
                         "forside": {
@@ -186,8 +173,8 @@
                         },
                         "enkeltProdukt": {
                             mal: "infoSide",
-                            data: { "overskrift": "tekster.produkt", "skjemaVisning": "produkter[i]" },
-                            metadata: { "listeVisning": "produktFelt", "meny": "sider" }
+                            data: { "overskrift": "tekster.produkt", "skjemaVisning": "produkter" },
+                            metadata: { "skjemaVisning": "produkt", "meny": "sider" }
                         },
                         "kontaktOss": {
                             visningsnavn: 'Kontakt oss',
@@ -225,7 +212,7 @@
                     grid-template-columns: ${metadataMal.layout.kolonner};
                     grid-template-areas: '${metadataMal.layout.mal.join(`' '`)}';
                     `;
-                let innhold = metadataMal.komponenter.map(k => this.renderKomponent(k, metadataSide)).join('');
+                let innhold = metadataMal.komponenter.map(k => this.renderKomponent(k, metadataSide, parameter)).join('');
                 document.getElementById('side').outerHTML =
                     `<div class="innhold" id="side" style="${style}">
                         <!-- ${sidenavn} -->
@@ -233,7 +220,7 @@
                      </div>`;
             }
 
-            renderKomponent(komponentNavn, metadataSide) {
+            renderKomponent(komponentNavn, metadataSide, parameter) {
                 let komponentFunksjon = komponenter[komponentNavn];
                 if (!komponentFunksjon) console.log('mangler komponent: ' + komponentNavn);
                 let dataSti = (metadataSide.data || {})[komponentNavn] || '';
@@ -241,7 +228,7 @@
                 return `<!-- start ${komponentNavn} --> 
                             ${komponentFunksjon(
                     this.hentVerdi(dataSti, this.data),
-                    this.hentVerdi(metadataSti, this.metadata))}
+                    this.hentVerdi(metadataSti, this.metadata), parameter)}
                         <!-- slutt ${komponentNavn} --> `;
             }
 
