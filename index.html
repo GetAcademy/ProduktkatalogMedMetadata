@@ -43,7 +43,7 @@
     </div>
     <script>
         let komponenter = {
-            overskrift: function (data, metadata) {
+            overskrift: function (data) {
                 let p = data.tekst ? `<p>${data.tekst}</p>` : '';
                 return `<div class="sideElement" style="grid-area: overskrift"><h3>${data.overskrift}</h3>${p}</div>`;
             },
